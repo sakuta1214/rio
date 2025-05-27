@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>りおポイント探しゲーム（難易度付き）</title>
+<title>りおポイント探しゲーム（難易度＆時間設定付き）</title>
 <style>
   body {
     margin: 0;
@@ -134,11 +134,11 @@
 <div id="controls">
   <label for="difficulty-select">難易度選択: </label>
   <select id="difficulty-select" aria-label="難易度選択">
-    <option value="easy">簡単（3個・大きめ）</option>
-    <option value="normal" selected>普通（5個・標準）</option>
-    <option value="hard">難しい（8個・小さくて透明）</option>
+    <option value="easy">簡単（3個・大きめ・60秒）</option>
+    <option value="normal" selected>普通（5個・標準・45秒）</option>
+    <option value="hard">難しい（8個・小さくて透明・20秒）</option>
   </select>
-  <button id="start-button">スタート！60秒で全部見つけろ！</button>
+  <button id="start-button">スタート！時間内に全部見つけろ！</button>
 </div>
 
 <div id="info">スタートボタンを押してゲーム開始！</div>
@@ -170,19 +170,17 @@
 
   const width = window.innerWidth;
   const height = 3000;
-  const timeLimit = 60; // 秒
 
   let timer = null;
-  let timeLeft = timeLimit;
+  let timeLeft = 0;
   let foundCount = 0;
   let gameStarted = false;
   let markers = [];
 
-  // 難易度ごとの設定
   const difficultySettings = {
-    easy: { count: 3, sizeClass: "easy" },
-    normal: { count: 5, sizeClass: "normal" },
-    hard: { count: 8, sizeClass: "hard" }
+    easy: { count: 3, sizeClass: "easy", time: 60 },
+    normal: { count: 5, sizeClass: "normal", time: 45 },
+    hard: { count: 8, sizeClass: "hard", time: 20 }
   };
 
   function createMarkers() {
@@ -237,7 +235,10 @@
   function startGame() {
     if (gameStarted) return;
     gameStarted = true;
-    timeLeft = timeLimit;
+    const difficulty = difficultySelect.value;
+    const settings = difficultySettings[difficulty];
+
+    timeLeft = settings.time;
     updateInfo();
     createMarkers();
     startBtn.disabled = true;
@@ -263,7 +264,7 @@
     const settings = difficultySettings[difficulty];
 
     if (cleared) {
-      resultMessage.textContent = `🎉 全部見つけた！タイム: ${timeLimit - timeLeft}秒 🎉`;
+      resultMessage.textContent = `🎉 全部見つけた！タイム: ${settings.time - timeLeft}秒 🎉`;
       const comment = quotes[Math.floor(Math.random() * quotes.length)];
       rewardComment.textContent = comment;
     } else {
@@ -276,14 +277,14 @@
   retryBtn.addEventListener('click', () => {
     resultScreen.style.display = 'none';
     foundCount = 0;
-    timeLeft = timeLimit;
+    timeLeft = 0;
     updateInfo();
     createMarkers();
   });
 
   startBtn.addEventListener('click', startGame);
 
-  // 初期状態でマーカー生成（ゲーム開始待ち）
+  // 初期状態（開始前）にマーカーを用意
   createMarkers();
   updateInfo();
 </script>
