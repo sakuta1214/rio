@@ -136,7 +136,7 @@
   <select id="difficulty-select" aria-label="難易度選択">
     <option value="easy">簡単（3個・大きめ・60秒）</option>
     <option value="normal" selected>普通（5個・標準・45秒）</option>
-    <option value="hard">難しい（15個・小さくて透明・20秒）</option>
+    <option value="hard">難しい（20個・小さくて透明・20秒）</option>
   </select>
   <button id="start-button">スタート！時間内に全部見つけろ！</button>
 </div>
@@ -180,7 +180,7 @@
   const difficultySettings = {
     easy: { count: 3, sizeClass: "easy", time: 60 },
     normal: { count: 5, sizeClass: "normal", time: 45 },
-    hard: { count: 15, sizeClass: "hard", time: 20 }  // ここだけ15に変更
+    hard: { count: 20, sizeClass: "hard", time: 20 }  // ここだけ15に変更
   };
 
   function createMarkers() {
