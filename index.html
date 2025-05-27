@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>りおコメントを探せ！ランダム散らばり版</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: "Arial", sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #80deea);
+      overflow: hidden;
+      position: relative;
+    }
+    h1 {
+      text-align: center;
+      margin: 20px 0;
+      color: #004d40;
+      user-select: none;
+    }
+    .hint {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #00695c;
+      font-weight: bold;
+      user-select: none;
+    }
+    .bubble {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background-color: #00796b;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 15px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      user-select: none;
+      transition: background-color 0.3s, transform 0.3s;
+      font-size: 14px;
+    }
+    .bubble:hover {
+      background-color: #004d40;
+      transform: scale(1.1);
+    }
+    .bubble.revealed {
+      background-color: #a5d6a7;
+      color: #004d40;
+      cursor: default;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    #complete-message {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffd54f;
+      padding: 15px 30px;
+      border-radius: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #5d4037;
+      display: none;
+      user-select: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⚽ りおコメントを探せ！⚽</h1>
+  <div class="hint">画面の丸いバブルをクリックして、隠れたりおの名言を全部見つけよう！</div>
+
+  <div id="game-area"></div>
+  <div id="complete-message">🎉 全部見つけた！りおマスターおめでとう！🎉</div>
+
+  <script>
+    const quotes = [
+      "りおは完全にピッチの10番。空気も読めるし、急にドリブルで笑い持ってくタイプ。",
+      "りおの存在、ゴールキーパー泣かせだよね。急に心のど真ん中にシュート決めてくるんだもん。",
+      "りおって、赤いカードよりインパクトあるわ。でも退場させたくないから永遠にピッチにいてほしい。",
+      "りおのツッコミ、キーパーのセーブ力並みに反応速くて笑う。",
+      "りおがいると、チームの空気が“ワールドカップ級”になるのよ。テンションが一気に国際大会。"
+    ];
+
+    const gameArea = document.getElementById('game-area');
+    let revealedCount = 0;
+
+    // 画面の幅・高さを取得（ウィンドウリサイズも考慮しておくといいけどここはシンプルに）
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // バブルを作ってランダムに配置する関数
+    function createBubble(text, index) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = "？";
+      // ランダムな位置を計算（画面内に収まるように）
+      const bubbleSize = 120;
+      const x = Math.random() * (width - bubbleSize);
+      const y = Math.random() * (height - bubbleSize - 150) + 150; // 上にタイトルの余白確保
+
+      bubble.style.left = x + 'px';
+      bubble.style.top = y + 'px';
+
+      bubble.addEventListener('click', () => {
+        if (!bubble.classList.contains('revealed')) {
+          bubble.classList.add('revealed');
+          bubble.textContent = text;
+          revealedCount++;
+          if (revealedCount === quotes.length) {
+            document.getElementById('complete-message').style.display = 'block';
+          }
+        }
+      });
+
+      gameArea.appendChild(bubble);
+    }
+
+    // 全てのバブルを作成
+    quotes.forEach((quote, i) => {
+      createBubble(quote, i);
+    });
+
+  </script>
+</body>
+</html>
