@@ -86,6 +86,12 @@
     background-color: #004d40cc;
     opacity: 0.7;
   }
+  .marker.extreme {
+    width: 15px;
+    height: 15px;
+    background-color: #00251aaa;
+    opacity: 0.5;
+  }
   .marker.found {
     background-color: #a5d6a7 !important;
     cursor: default;
@@ -137,6 +143,7 @@
     <option value="easy">簡単（3個・大きめ・60秒）</option>
     <option value="normal" selected>普通（5個・標準・45秒）</option>
     <option value="hard">難しい（20個・小さくて透明・20秒）</option>
+    <option value="extreme">激むず（25個・超小・15秒）</option>
   </select>
   <button id="start-button">スタート！時間内に全部見つけろ！</button>
 </div>
@@ -180,7 +187,8 @@
   const difficultySettings = {
     easy: { count: 3, sizeClass: "easy", time: 60 },
     normal: { count: 5, sizeClass: "normal", time: 45 },
-    hard: { count: 20, sizeClass: "hard", time: 20 }  // ここだけ15に変更
+    hard: { count: 20, sizeClass: "hard", time: 20 },
+    extreme: { count: 25, sizeClass: "extreme", time: 15 }  // 激むず設定
   };
 
   function createMarkers() {
@@ -194,7 +202,7 @@
     for (let i = 0; i < settings.count; i++) {
       const marker = document.createElement('div');
       marker.className = `marker ${settings.sizeClass}`;
-      const sizeMap = { easy: 40, normal: 30, hard: 20 };
+      const sizeMap = { easy: 40, normal: 30, hard: 20, extreme: 15 };
       const size = sizeMap[difficulty];
       const x = Math.random() * (width - size);
       const y = Math.random() * (height - size - 100) + 100;
