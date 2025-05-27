@@ -3,36 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>りおコメント探しゲーム（豪華エフェクト版）</title>
+<title>りおポイント探しゲーム（難易度付き）</title>
 <style>
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 6px 2px rgba(76,175,80,0.7); }
-    50% { box-shadow: 0 0 14px 6px rgba(76,175,80,0.3); }
-    100% { box-shadow: 0 0 6px 2px rgba(76,175,80,0.7); }
-  }
-  @keyframes ripple {
-    0% {
-      transform: scale(1);
-      opacity: 0.7;
-    }
-    100% {
-      transform: scale(3);
-      opacity: 0;
-    }
-  }
-  @keyframes sparkle {
-    0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-    50% { transform: scale(1.1) rotate(10deg); opacity: 0.6; }
-  }
-  @keyframes completePulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.8; }
-  }
-
   body {
     margin: 0;
     font-family: "Arial", sans-serif;
@@ -42,17 +14,41 @@
   }
   h1 {
     text-align: center;
-    margin: 20px 0;
+    margin: 20px 0 5px 0;
     color: #004d40;
     font-size: 1.6rem;
   }
-  .hint {
+  #controls {
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+  }
+  select, button {
+    font-size: 1.1rem;
+    padding: 8px 18px;
+    margin: 0 8px 15px 8px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  }
+  select {
+    background-color: #ffffff;
+    color: #004d40;
+  }
+  button#start-button {
+    background-color: #00796b;
+    color: white;
+  }
+  button#start-button:disabled {
+    background-color: #004d40;
+    cursor: not-allowed;
+  }
+  #info {
+    text-align: center;
     font-weight: bold;
     color: #00695c;
-    font-size: 1.1rem;
-    padding: 0 10px;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
   }
   #game-area {
     position: relative;
@@ -65,97 +61,94 @@
       #80cbc4 10px,
       #80cbc4 20px
     );
+    touch-action: manipulation;
   }
   .marker {
     position: absolute;
-    width: 30px;
-    height: 30px;
-    background-color: #00796b;
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    animation: float 3s ease-in-out infinite;
     transition: background-color 0.3s, transform 0.3s;
-    touch-action: manipulation;
   }
-  .marker:hover:not(.found),
-  .marker:focus-visible:not(.found) {
-    background-color: #004d40;
-    transform: scale(1.3) translateY(-5px);
+  .marker.easy {
+    width: 40px;
+    height: 40px;
+    background-color: #009688;
+  }
+  .marker.normal {
+    width: 30px;
+    height: 30px;
+    background-color: #00796b;
+  }
+  .marker.hard {
+    width: 20px;
+    height: 20px;
+    background-color: #004d40cc;
+    opacity: 0.7;
   }
   .marker.found {
-    background-color: #a5d6a7;
+    background-color: #a5d6a7 !important;
     cursor: default;
-    box-shadow: 0 0 12px 6px #4caf50aa;
-    animation: pulse 2s infinite;
+    box-shadow: 0 0 12px 6px #4caf50aa !important;
+    opacity: 1 !important;
   }
-  /* リップル（波紋）効果 */
-  .ripple {
-    position: absolute;
-    border-radius: 50%;
-    background-color: #4caf50aa;
-    pointer-events: none;
-    animation: ripple 0.6s ease-out forwards;
-    z-index: 15;
-  }
-  /* コメント吹き出し */
-  .tooltip {
-    position: absolute;
-    max-width: 220px;
-    background: #ffffffdd;
-    border-radius: 12px;
-    padding: 14px 20px;
-    box-shadow: 0 3px 14px rgba(0,0,0,0.25);
-    color: #004d40;
-    font-weight: bold;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    z-index: 20;
-    font-size: 1rem;
-    line-height: 1.3;
-    transform: translateY(15px);
-  }
-  .tooltip.show {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-  }
-  .tooltip::after {
-    content: "";
-    position: absolute;
-    bottom: 100%;
-    left: 20px;
-    border-width: 8px;
-    border-style: solid;
-    border-color: transparent transparent #ffffffdd transparent;
-  }
-  #complete-message {
+  #result-screen {
     position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #ffd54f;
-    padding: 18px 36px;
-    border-radius: 40px;
-    font-size: 24px;
-    font-weight: bold;
-    color: #5d4037;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffffee;
+    border-radius: 15px;
+    padding: 20px 30px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    text-align: center;
     display: none;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.3);
-    user-select: none;
-    z-index: 30;
-    animation: completePulse 2s ease-in-out infinite;
+    max-width: 90vw;
+    z-index: 100;
+  }
+  #result-message {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: #004d40;
+  }
+  #reward-comment {
+    font-size: 1.1rem;
+    color: #00796b;
+    margin-bottom: 25px;
+  }
+  #retry-button {
+    padding: 10px 28px;
+    font-size: 1.1rem;
+    border: none;
+    background-color: #00796b;
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
   }
 </style>
 </head>
 <body>
 
-<h1>⚽ りおコメント探しゲーム ⚽</h1>
-<div class="hint">スクロールして小さな丸（ポイント）を探し、タップまたはクリックするとコメントが出るよ！全部見つけてね！</div>
+<h1>⚽ りおポイント探しゲーム ⚽</h1>
 
-<div id="game-area"></div>
-<div id="complete-message">🎉 全て見つけた！りおマスターおめでとう！🎉</div>
+<div id="controls">
+  <label for="difficulty-select">難易度選択: </label>
+  <select id="difficulty-select" aria-label="難易度選択">
+    <option value="easy">簡単（3個・大きめ）</option>
+    <option value="normal" selected>普通（5個・標準）</option>
+    <option value="hard">難しい（8個・小さくて透明）</option>
+  </select>
+  <button id="start-button">スタート！60秒で全部見つけろ！</button>
+</div>
+
+<div id="info">スタートボタンを押してゲーム開始！</div>
+<div id="game-area" aria-live="polite" aria-atomic="true"></div>
+
+<div id="result-screen" role="dialog" aria-modal="true" aria-labelledby="result-message">
+  <div id="result-message"></div>
+  <div id="reward-comment"></div>
+  <button id="retry-button">もう一度挑戦</button>
+</div>
 
 <script>
   const quotes = [
@@ -167,79 +160,132 @@
   ];
 
   const gameArea = document.getElementById('game-area');
-  const completeMsg = document.getElementById('complete-message');
-  let revealedCount = 0;
-
-  const tooltip = document.createElement('div');
-  tooltip.className = 'tooltip';
-  document.body.appendChild(tooltip);
+  const info = document.getElementById('info');
+  const startBtn = document.getElementById('start-button');
+  const resultScreen = document.getElementById('result-screen');
+  const resultMessage = document.getElementById('result-message');
+  const rewardComment = document.getElementById('reward-comment');
+  const retryBtn = document.getElementById('retry-button');
+  const difficultySelect = document.getElementById('difficulty-select');
 
   const width = window.innerWidth;
   const height = 3000;
+  const timeLimit = 60; // 秒
 
-  function createRipple(x, y) {
-    const ripple = document.createElement('div');
-    ripple.className = 'ripple';
-    ripple.style.left = (x - 15) + 'px';
-    ripple.style.top = (y - 15) + 'px';
-    gameArea.appendChild(ripple);
-    ripple.addEventListener('animationend', () => ripple.remove());
+  let timer = null;
+  let timeLeft = timeLimit;
+  let foundCount = 0;
+  let gameStarted = false;
+  let markers = [];
+
+  // 難易度ごとの設定
+  const difficultySettings = {
+    easy: { count: 3, sizeClass: "easy" },
+    normal: { count: 5, sizeClass: "normal" },
+    hard: { count: 8, sizeClass: "hard" }
+  };
+
+  function createMarkers() {
+    markers.forEach(m => m.remove());
+    markers = [];
+    const difficulty = difficultySelect.value;
+    const settings = difficultySettings[difficulty];
+    foundCount = 0;
+    updateInfo();
+
+    for (let i = 0; i < settings.count; i++) {
+      const marker = document.createElement('div');
+      marker.className = `marker ${settings.sizeClass}`;
+      const sizeMap = { easy: 40, normal: 30, hard: 20 };
+      const size = sizeMap[difficulty];
+      const x = Math.random() * (width - size);
+      const y = Math.random() * (height - size - 100) + 100;
+      marker.style.left = x + 'px';
+      marker.style.top = y + 'px';
+
+      marker.addEventListener('click', () => {
+        if (!gameStarted || marker.classList.contains('found')) return;
+        marker.classList.add('found');
+        foundCount++;
+        updateInfo();
+        if (foundCount === settings.count) {
+          endGame(true);
+        }
+      });
+      marker.addEventListener('touchstart', e => {
+        e.preventDefault();
+        if (!gameStarted || marker.classList.contains('found')) return;
+        marker.classList.add('found');
+        foundCount++;
+        updateInfo();
+        if (foundCount === settings.count) {
+          endGame(true);
+        }
+      });
+
+      gameArea.appendChild(marker);
+      markers.push(marker);
+    }
   }
 
-  quotes.forEach((quote, i) => {
-    const marker = document.createElement('div');
-    marker.className = 'marker';
+  function updateInfo() {
+    const difficulty = difficultySelect.value;
+    const settings = difficultySettings[difficulty];
+    info.textContent = `残り時間: ${timeLeft}秒 | 見つけた: ${foundCount} / ${settings.count}`;
+  }
 
-    const size = 30;
-    const x = Math.random() * (width - size);
-    const y = Math.random() * (height - size - 100) + 100;
+  function startGame() {
+    if (gameStarted) return;
+    gameStarted = true;
+    timeLeft = timeLimit;
+    updateInfo();
+    createMarkers();
+    startBtn.disabled = true;
+    difficultySelect.disabled = true;
+    resultScreen.style.display = 'none';
 
-    marker.style.left = x + 'px';
-    marker.style.top = y + 'px';
-
-    function reveal(e) {
-      e.preventDefault();
-      if (marker.classList.contains('found')) return;
-
-      marker.classList.add('found');
-      revealedCount++;
-
-      createRipple(x + size / 2, y + size / 2);
-
-      let tooltipX = x + size + 10;
-      if (tooltipX + 220 > window.innerWidth) {
-        tooltipX = x - 230;
+    timer = setInterval(() => {
+      timeLeft--;
+      updateInfo();
+      if (timeLeft <= 0) {
+        endGame(false);
       }
-      let tooltipY = y;
-      if (tooltipY + 80 > window.innerHeight + window.scrollY) {
-        tooltipY = window.innerHeight + window.scrollY - 90;
-      }
+    }, 1000);
+  }
 
-      tooltip.textContent = quote;
-      tooltip.style.left = tooltipX + 'px';
-      tooltip.style.top = tooltipY + 'px';
-      tooltip.classList.add('show');
+  function endGame(cleared) {
+    clearInterval(timer);
+    gameStarted = false;
+    startBtn.disabled = false;
+    difficultySelect.disabled = false;
 
-      tooltip.onclick = () => {
-        tooltip.classList.remove('show');
-      };
+    const difficulty = difficultySelect.value;
+    const settings = difficultySettings[difficulty];
 
-      if (revealedCount === quotes.length) {
-        completeMsg.style.display = 'block';
-      }
-
-      e.stopPropagation();
+    if (cleared) {
+      resultMessage.textContent = `🎉 全部見つけた！タイム: ${timeLimit - timeLeft}秒 🎉`;
+      const comment = quotes[Math.floor(Math.random() * quotes.length)];
+      rewardComment.textContent = comment;
+    } else {
+      resultMessage.textContent = "⏰ 時間切れ！残念、もう一度挑戦してね！";
+      rewardComment.textContent = "";
     }
+    resultScreen.style.display = 'block';
+  }
 
-    marker.addEventListener('click', reveal);
-    marker.addEventListener('touchstart', reveal);
-
-    gameArea.appendChild(marker);
+  retryBtn.addEventListener('click', () => {
+    resultScreen.style.display = 'none';
+    foundCount = 0;
+    timeLeft = timeLimit;
+    updateInfo();
+    createMarkers();
   });
 
-  document.body.addEventListener('click', () => {
-    tooltip.classList.remove('show');
-  });
+  startBtn.addEventListener('click', startGame);
+
+  // 初期状態でマーカー生成（ゲーム開始待ち）
+  createMarkers();
+  updateInfo();
 </script>
 
 </body>
