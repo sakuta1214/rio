@@ -3,29 +3,61 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>りおコメント探しゲーム（隠し＆スクロール）</title>
+<title>りおコメント探しゲーム（豪華エフェクト版）</title>
 <style>
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 6px 2px rgba(76,175,80,0.7); }
+    50% { box-shadow: 0 0 14px 6px rgba(76,175,80,0.3); }
+    100% { box-shadow: 0 0 6px 2px rgba(76,175,80,0.7); }
+  }
+  @keyframes ripple {
+    0% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(3);
+      opacity: 0;
+    }
+  }
+  @keyframes sparkle {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.1) rotate(10deg); opacity: 0.6; }
+  }
+  @keyframes completePulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+  }
+
   body {
     margin: 0;
     font-family: "Arial", sans-serif;
     background: linear-gradient(135deg, #e0f7fa, #80deea);
     user-select: none;
+    overflow-x: hidden;
   }
   h1 {
     text-align: center;
     margin: 20px 0;
     color: #004d40;
+    font-size: 1.6rem;
   }
   .hint {
     text-align: center;
     margin-bottom: 15px;
     font-weight: bold;
     color: #00695c;
+    font-size: 1.1rem;
+    padding: 0 10px;
   }
   #game-area {
     position: relative;
     width: 100vw;
-    height: 3000px; /* スクロールできる縦長エリア */
+    height: 3000px;
     background-image: repeating-linear-gradient(
       45deg,
       #b2dfdb 0,
@@ -36,76 +68,91 @@
   }
   .marker {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     background-color: #00796b;
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    animation: float 3s ease-in-out infinite;
     transition: background-color 0.3s, transform 0.3s;
+    touch-action: manipulation;
   }
-  .marker:hover {
+  .marker:hover:not(.found),
+  .marker:focus-visible:not(.found) {
     background-color: #004d40;
-    transform: scale(1.3);
+    transform: scale(1.3) translateY(-5px);
   }
   .marker.found {
     background-color: #a5d6a7;
     cursor: default;
-    box-shadow: 0 0 8px 3px #4caf50aa;
+    box-shadow: 0 0 12px 6px #4caf50aa;
+    animation: pulse 2s infinite;
   }
-
+  /* リップル（波紋）効果 */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: #4caf50aa;
+    pointer-events: none;
+    animation: ripple 0.6s ease-out forwards;
+    z-index: 15;
+  }
   /* コメント吹き出し */
   .tooltip {
     position: absolute;
     max-width: 220px;
-    background: #ffffffcc;
-    border-radius: 8px;
-    padding: 10px 15px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    background: #ffffffdd;
+    border-radius: 12px;
+    padding: 14px 20px;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.25);
     color: #004d40;
     font-weight: bold;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 10;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 20;
+    font-size: 1rem;
+    line-height: 1.3;
+    transform: translateY(15px);
   }
   .tooltip.show {
     opacity: 1;
     pointer-events: auto;
+    transform: translateY(0);
   }
-  /* 矢印 */
   .tooltip::after {
     content: "";
     position: absolute;
     bottom: 100%;
     left: 20px;
-    border-width: 6px;
+    border-width: 8px;
     border-style: solid;
-    border-color: transparent transparent #ffffffcc transparent;
+    border-color: transparent transparent #ffffffdd transparent;
   }
-
   #complete-message {
     position: fixed;
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
     background: #ffd54f;
-    padding: 15px 30px;
-    border-radius: 30px;
-    font-size: 20px;
+    padding: 18px 36px;
+    border-radius: 40px;
+    font-size: 24px;
     font-weight: bold;
     color: #5d4037;
     display: none;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.3);
     user-select: none;
-    z-index: 20;
+    z-index: 30;
+    animation: completePulse 2s ease-in-out infinite;
   }
 </style>
 </head>
 <body>
 
 <h1>⚽ りおコメント探しゲーム ⚽</h1>
-<div class="hint">スクロールして小さな丸（ポイント）を探し、クリックするとコメントが出るよ！全部見つけてね！</div>
+<div class="hint">スクロールして小さな丸（ポイント）を探し、タップまたはクリックするとコメントが出るよ！全部見つけてね！</div>
 
 <div id="game-area"></div>
 <div id="complete-message">🎉 全て見つけた！りおマスターおめでとう！🎉</div>
@@ -123,57 +170,73 @@
   const completeMsg = document.getElementById('complete-message');
   let revealedCount = 0;
 
-  // 吹き出し要素作成
   const tooltip = document.createElement('div');
   tooltip.className = 'tooltip';
   document.body.appendChild(tooltip);
 
-  // ウィンドウサイズを取得
   const width = window.innerWidth;
-  const height = 3000; // gameArea高さと合わせる
+  const height = 3000;
 
-  // 各ポイントをランダム配置
+  function createRipple(x, y) {
+    const ripple = document.createElement('div');
+    ripple.className = 'ripple';
+    ripple.style.left = (x - 15) + 'px';
+    ripple.style.top = (y - 15) + 'px';
+    gameArea.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+  }
+
   quotes.forEach((quote, i) => {
     const marker = document.createElement('div');
     marker.className = 'marker';
-    // マーカーサイズ: 20px, 位置調整は左上座標なのでマーカーサイズ考慮
-    const size = 20;
+
+    const size = 30;
     const x = Math.random() * (width - size);
-    const y = Math.random() * (height - size - 100) + 100; // 上部に余裕を持たせる
+    const y = Math.random() * (height - size - 100) + 100;
 
     marker.style.left = x + 'px';
     marker.style.top = y + 'px';
 
-    // クリックイベント
-    marker.addEventListener('click', (e) => {
+    function reveal(e) {
+      e.preventDefault();
       if (marker.classList.contains('found')) return;
 
       marker.classList.add('found');
       revealedCount++;
 
-      // 吹き出し表示
+      createRipple(x + size / 2, y + size / 2);
+
+      let tooltipX = x + size + 10;
+      if (tooltipX + 220 > window.innerWidth) {
+        tooltipX = x - 230;
+      }
+      let tooltipY = y;
+      if (tooltipY + 80 > window.innerHeight + window.scrollY) {
+        tooltipY = window.innerHeight + window.scrollY - 90;
+      }
+
       tooltip.textContent = quote;
-      tooltip.style.left = (x + size + 10) + 'px';
-      tooltip.style.top = y + 'px';
+      tooltip.style.left = tooltipX + 'px';
+      tooltip.style.top = tooltipY + 'px';
       tooltip.classList.add('show');
 
-      // 吹き出しをクリックしたら消える
       tooltip.onclick = () => {
         tooltip.classList.remove('show');
       };
 
-      // コンプリート判定
       if (revealedCount === quotes.length) {
         completeMsg.style.display = 'block';
       }
 
       e.stopPropagation();
-    });
+    }
+
+    marker.addEventListener('click', reveal);
+    marker.addEventListener('touchstart', reveal);
 
     gameArea.appendChild(marker);
   });
 
-  // 画面のどこかクリックで吹き出し消す
   document.body.addEventListener('click', () => {
     tooltip.classList.remove('show');
   });
